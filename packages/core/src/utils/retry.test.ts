@@ -256,7 +256,7 @@ describe('retryWithBackoff', () => {
       });
 
       const promise = retryWithBackoff(mockFn, {
-        maxAttempts: EXPECTED_DOWNGRADE_ATTEMPTS+1,
+        maxAttempts: EXPECTED_DOWNGRADE_ATTEMPTS + 1,
         initialDelayMs: 100,
         onPersistent429: async (authType?: string) => {
           fallbackOccurred = true;
@@ -275,7 +275,7 @@ describe('retryWithBackoff', () => {
       expect(fallbackCallback).toHaveBeenCalledWith('oauth-personal');
 
       // Should retry again after fallback
-      expect(mockFn).toHaveBeenCalledTimes(EXPECTED_DOWNGRADE_ATTEMPTS+1); // 2 initial attempts + 1 after fallback
+      expect(mockFn).toHaveBeenCalledTimes(EXPECTED_DOWNGRADE_ATTEMPTS + 1); // 2 initial attempts + 1 after fallback
     });
 
     it('should NOT trigger fallback for API key users', async () => {
@@ -324,7 +324,7 @@ describe('retryWithBackoff', () => {
       });
 
       const promise = retryWithBackoff(mockFn, {
-        maxAttempts: EXPECTED_DOWNGRADE_ATTEMPTS+1,
+        maxAttempts: EXPECTED_DOWNGRADE_ATTEMPTS + 1,
         initialDelayMs: 100,
         onPersistent429: fallbackCallback,
         authType: 'oauth-personal',
@@ -346,7 +346,7 @@ describe('retryWithBackoff', () => {
       });
 
       const promise = retryWithBackoff(mockFn, {
-        maxAttempts: EXPECTED_DOWNGRADE_ATTEMPTS+1,
+        maxAttempts: EXPECTED_DOWNGRADE_ATTEMPTS + 1,
         initialDelayMs: 100,
         onPersistent429: fallbackCallback,
         authType: 'oauth-personal',

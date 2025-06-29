@@ -50,16 +50,18 @@ describe('Flash Fallback Integration', () => {
     expect(result).toBe(true);
   });
 
-  it('should trigger fallback after 2 consecutive 429 errors for OAuth users', async () => {
+  it('should trigger fallback after N consecutive 429 errors for OAuth users', async () => {
     let fallbackCalled = false;
     let fallbackModel = '';
+    const EXPECTED_DOWNGRADE_ATTEMPTS = 5;
 
     // Mock function that simulates exactly 2 429 errors, then succeeds after fallback
-    const mockApiCall = vi
-      .fn()
-      .mockRejectedValueOnce(createSimulated429Error())
-      .mockRejectedValueOnce(createSimulated429Error())
-      .mockResolvedValueOnce('success after fallback');
+    const mockApiCall = vi.fn();
+    for (let i = 0; i < EXPECTED_DOWNGRADE_ATTEMPTS; i += 1) {
+      mockApiCall.mockRejectedValueOnce(createSimulated429Error());
+    }
+
+    mockApiCall.mockResolvedValueOnce('success after fallback');
 
     // Mock fallback handler
     const mockFallbackHandler = vi.fn(async (_authType?: string) => {
@@ -70,7 +72,7 @@ describe('Flash Fallback Integration', () => {
 
     // Test with OAuth personal auth type, with maxAttempts = 2 to ensure fallback triggers
     const result = await retryWithBackoff(mockApiCall, {
-      maxAttempts: 2,
+      maxAttempts: EXPECTED_DOWNGRADE_ATTEMPTS,
       initialDelayMs: 1,
       maxDelayMs: 10,
       shouldRetry: (error: Error) => {
@@ -89,7 +91,7 @@ describe('Flash Fallback Integration', () => {
     );
     expect(result).toBe('success after fallback');
     // Should have: 2 failures, then fallback triggered, then 1 success after retry reset
-    expect(mockApiCall).toHaveBeenCalledTimes(3);
+    expect(mockApiCall).toHaveBeenCalledTimes(EXPECTED_DOWNGRADE_ATTEMPTS + 1);
   });
 
   it('should not trigger fallback for API key users', async () => {
