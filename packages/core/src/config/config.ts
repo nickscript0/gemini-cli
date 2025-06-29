@@ -96,6 +96,8 @@ export type FlashFallbackHandler = (
   fallbackModel: string,
 ) => Promise<boolean>;
 
+export type Retry429CountHandler = (count: number) => void;
+
 export interface ConfigParameters {
   sessionId: string;
   embeddingModel?: string;
@@ -169,6 +171,7 @@ export class Config {
   private readonly extensionContextFilePaths: string[];
   private modelSwitchedDuringSession: boolean = false;
   flashFallbackHandler?: FlashFallbackHandler;
+  retry429CountHandler?: Retry429CountHandler;
 
   constructor(params: ConfigParameters) {
     this.sessionId = params.sessionId;
@@ -288,6 +291,10 @@ export class Config {
 
   setFlashFallbackHandler(handler: FlashFallbackHandler): void {
     this.flashFallbackHandler = handler;
+  }
+
+  setRetry429CountHandler(handler: Retry429CountHandler): void {
+    this.retry429CountHandler = handler;
   }
 
   getEmbeddingModel(): string {

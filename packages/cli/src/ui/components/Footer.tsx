@@ -11,6 +11,7 @@ import { shortenPath, tildeifyPath, tokenLimit } from '@google/gemini-cli-core';
 import { ConsoleSummaryDisplay } from './ConsoleSummaryDisplay.js';
 import process from 'node:process';
 import { MemoryUsageDisplay } from './MemoryUsageDisplay.js';
+import { useRetryContext } from '../contexts/RetryContext.js';
 
 interface FooterProps {
   model: string;
@@ -41,6 +42,7 @@ export const Footer: React.FC<FooterProps> = ({
 }) => {
   const limit = tokenLimit(model);
   const percentage = totalTokenCount / limit;
+  const { consecutive429Count } = useRetryContext();
 
   return (
     <Box marginTop={1} justifyContent="space-between" width="100%">
@@ -86,6 +88,9 @@ export const Footer: React.FC<FooterProps> = ({
           {model}{' '}
           <Text color={Colors.Gray}>
             ({((1 - percentage) * 100).toFixed(0)}% context left)
+            {consecutive429Count >= 0 && (
+              <Text color={Colors.AccentRed}> | 429×{consecutive429Count}</Text>
+            )}
           </Text>
         </Text>
         {corgiMode && (

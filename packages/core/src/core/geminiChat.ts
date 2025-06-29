@@ -277,6 +277,7 @@ export class GeminiChat {
         onPersistent429: async (authType?: string) =>
           await this.handleFlashFallback(authType),
         authType: this.config.getContentGeneratorConfig()?.authType,
+        on429CountChange: this.config.retry429CountHandler,
       });
       const durationMs = Date.now() - startTime;
       await this._logApiResponse(
@@ -374,6 +375,7 @@ export class GeminiChat {
         onPersistent429: async (authType?: string) =>
           await this.handleFlashFallback(authType),
         authType: this.config.getContentGeneratorConfig()?.authType,
+        on429CountChange: this.config.retry429CountHandler,
       });
 
       // Resolve the internal tracking of send completion promise - `sendPromise`

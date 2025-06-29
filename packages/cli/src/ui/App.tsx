@@ -62,6 +62,7 @@ import {
   SessionStatsProvider,
   useSessionStats,
 } from './contexts/SessionContext.js';
+import { RetryProvider, useRetryContext } from './contexts/RetryContext.js';
 import { useGitBranchName } from './hooks/useGitBranchName.js';
 import { useBracketedPaste } from './hooks/useBracketedPaste.js';
 import { useTextBuffer } from './components/shared/text-buffer.js';
@@ -83,7 +84,9 @@ interface AppProps {
 
 export const AppWrapper = (props: AppProps) => (
   <SessionStatsProvider>
-    <App {...props} />
+    <RetryProvider>
+      <App {...props} />
+    </RetryProvider>
   </SessionStatsProvider>
 );
 
@@ -261,6 +264,19 @@ const App = ({ config, settings, startupWarnings = [] }: AppProps) => {
 
     config.setFlashFallbackHandler(flashFallbackHandler);
   }, [config, addItem]);
+
+  // Set up 429 count handler
+  const { setConsecutive429Count } = useRetryContext();
+  useEffect(() => {
+    const retry429CountHandler = (count: number) => {
+      setConsecutive429Count(count);
+    };
+
+    // Check if the method exists before calling it (for backward compatibility)
+    if (typeof config.setRetry429CountHandler === 'function') {
+      config.setRetry429CountHandler(retry429CountHandler);
+    }
+  }, [config, setConsecutive429Count]);
 
   const {
     handleSlashCommand,

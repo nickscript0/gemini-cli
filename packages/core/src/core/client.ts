@@ -281,6 +281,7 @@ export class GeminiClient {
         onPersistent429: async (authType?: string) =>
           await this.handleFlashFallback(authType),
         authType: this.config.getContentGeneratorConfig()?.authType,
+        on429CountChange: this.config.retry429CountHandler,
       });
 
       const text = getResponseText(result);
@@ -369,6 +370,7 @@ export class GeminiClient {
         onPersistent429: async (authType?: string) =>
           await this.handleFlashFallback(authType),
         authType: this.config.getContentGeneratorConfig()?.authType,
+        on429CountChange: this.config.retry429CountHandler,
       });
       return result;
     } catch (error: unknown) {

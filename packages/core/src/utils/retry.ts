@@ -12,6 +12,7 @@ export interface RetryOptions {
   maxDelayMs: number;
   shouldRetry: (error: Error) => boolean;
   onPersistent429?: (authType?: string) => Promise<string | null>;
+  on429CountChange?: (count: number) => void;
   authType?: string;
 }
 
@@ -70,6 +71,7 @@ export async function retryWithBackoff<T>(
     onPersistent429,
     authType,
     shouldRetry,
+    on429CountChange,
   } = {
     ...DEFAULT_RETRY_OPTIONS,
     ...options,
@@ -82,15 +84,29 @@ export async function retryWithBackoff<T>(
   while (attempt < maxAttempts) {
     attempt++;
     try {
-      return await fn();
+      const result = await fn();
+      // Reset count on successful call
+      if (consecutive429Count > 0 && on429CountChange) {
+        consecutive429Count = 0;
+        on429CountChange(consecutive429Count);
+      }
+      return result;
     } catch (error) {
       const errorStatus = getErrorStatus(error);
 
       // Track consecutive 429 errors
       if (errorStatus === 429) {
         consecutive429Count++;
+        // Notify UI of 429 count change
+        if (on429CountChange) {
+          on429CountChange(consecutive429Count);
+        }
       } else {
         consecutive429Count = 0;
+        // Reset count to 0 when non-429 error occurs
+        if (on429CountChange) {
+          on429CountChange(consecutive429Count);
+        }
       }
 
       // If we have persistent 429s and a fallback callback for OAuth
