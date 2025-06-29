@@ -54,6 +54,7 @@ import {
   ApprovalMode,
   isEditorAvailable,
   EditorType,
+  RequestStatusInfo,
 } from '@google/gemini-cli-core';
 import { validateAuthMethod } from '../config/auth.js';
 import { useLogger } from './hooks/useLogger.js';
@@ -67,7 +68,6 @@ import {
   RequestStatusProvider,
   useRequestStatus,
 } from './contexts/RequestStatusContext.js';
-import type { RequestStatusInfo } from '@google/gemini-cli-core';
 import { useGitBranchName } from './hooks/useGitBranchName.js';
 import { useBracketedPaste } from './hooks/useBracketedPaste.js';
 import { useTextBuffer } from './components/shared/text-buffer.js';

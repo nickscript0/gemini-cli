@@ -33,7 +33,7 @@ This fork extends the original Gemini CLI with additional features and improveme
   - Line 1: `"[Type] request of size [X] ([duration]s)"`
   - Line 2: `"[message snippet]" tools:[N] temp:[X] max:[N] sys:"[system snippet]"`
 - **Update Frequency**: 100ms timer for real-time duration updates
-- **Request Types Tracked**: Prompt, JSON generation, Content generation
+- **Request Types Tracked**: Prompt, JSON generation, Content generation (all with config details)
 - **Size Calculation**: JSON.stringify() length of request payloads
 - **Config Extraction**: Helper function extracts key parameters from GenerateContentConfig
 - **Integration Pattern**: Uses same callback pattern as existing 429 rate limit tracking
@@ -44,11 +44,11 @@ This fork extends the original Gemini CLI with additional features and improveme
 - Real-time duration display during active requests
 - Request size tracking for performance awareness
 - **Enhanced config details display including:**
-  - **Message snippet** (first 50 characters of user input)
+  - **Message snippet** (first 50 characters of user input, trimmed of whitespace)
   - **Tools count** (number of tools available to the model)
   - **Temperature setting** (model creativity parameter)
   - **Max output tokens** (response length limit)
-  - **System instruction snippet** (first 50 characters of system prompt)
+  - **System instruction snippet** (first 50 characters of system prompt, trimmed of whitespace)
 - Automatic cleanup on request completion/error
 - Non-intrusive display (new line below main footer)
 - Type-specific request identification
@@ -79,3 +79,9 @@ _Last Updated: June 29, 2025_
 - System instructions (when present)
 
 This enhancement helps users understand exactly what parameters are being sent to the Gemini API during each request, improving debugging and optimization workflows.
+
+**JSON Generation Request Status Enhancement**: Extended the request status display to include configuration details for JSON generation requests, matching the functionality already available for prompt requests. This provides consistent visibility across all request types including:
+
+- Message snippet display for JSON generation requests
+- Configuration parameter visibility (tools, temperature, max tokens, system instructions)
+- Consistent color-coded parameter display across all request types

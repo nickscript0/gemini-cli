@@ -27,7 +27,7 @@ import { ReadManyFilesTool } from '../tools/read-many-files.js';
 import { getResponseText } from '../utils/generateContentResponseUtilities.js';
 import { checkNextSpeaker } from '../utils/nextSpeakerChecker.js';
 import { reportError } from '../utils/errorReporting.js';
-import { GeminiChat } from './geminiChat.js';
+import { GeminiChat, extractConfigDetails } from './geminiChat.js';
 import { retryWithBackoff } from '../utils/retry.js';
 import { getErrorMessage } from '../utils/errors.js';
 import { tokenLimit } from './tokenLimits.js';
@@ -259,11 +259,13 @@ export class GeminiClient {
     // Track request status
     const requestId = `json-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
     const requestSize = JSON.stringify(contents).length;
+    const configDetails = extractConfigDetails(config, contents);
     const requestInfo = {
       id: requestId,
       type: 'json' as const,
       description: `JSON generation request of size ${requestSize}`,
       size: requestSize,
+      configDetails,
     };
 
     this.config.requestStatusHandler?.('start', requestInfo);
@@ -375,11 +377,13 @@ export class GeminiClient {
     // Track request status
     const requestId = `content-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
     const requestSize = JSON.stringify(contents).length;
+    const configDetails = extractConfigDetails(generationConfig, contents);
     const requestInfo = {
       id: requestId,
       type: 'content' as const,
       description: `Content generation request of size ${requestSize}`,
       size: requestSize,
+      configDetails,
     };
 
     this.config.requestStatusHandler?.('start', requestInfo);

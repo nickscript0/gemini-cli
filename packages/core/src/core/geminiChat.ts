@@ -39,9 +39,9 @@ import { DEFAULT_GEMINI_FLASH_MODEL } from '../config/models.js';
 /**
  * Extracts config details for request status display
  */
-function extractConfigDetails(
+export function extractConfigDetails(
   config: GenerateContentConfig | undefined,
-  message: any,
+  message: unknown,
 ): {
   toolsCount?: number;
   systemInstructionSnippet?: string;
@@ -70,21 +70,33 @@ function extractConfigDetails(
       let systemText = '';
       try {
         // Try to extract text from system instruction
-        const instruction = config.systemInstruction as any;
+        const instruction = config.systemInstruction;
         if (typeof instruction === 'string') {
           systemText = instruction;
-        } else if (instruction.parts && Array.isArray(instruction.parts)) {
+        } else if (
+          instruction &&
+          typeof instruction === 'object' &&
+          'parts' in instruction &&
+          Array.isArray(instruction.parts)
+        ) {
           systemText = instruction.parts
-            .map((part: any) => part.text || '')
+            .map((part: unknown) =>
+              part &&
+              typeof part === 'object' &&
+              'text' in part &&
+              typeof part.text === 'string'
+                ? part.text
+                : '',
+            )
             .join(' ');
         }
-      } catch (e) {
+      } catch (_e) {
         systemText = 'System instruction present';
       }
       details.systemInstructionSnippet =
-        systemText.length > 50
-          ? systemText.substring(0, 50) + '...'
-          : systemText;
+        systemText.trim().length > 50
+          ? systemText.trim().substring(0, 50) + '...'
+          : systemText.trim();
     }
 
     // Extract temperature and maxOutputTokens
@@ -102,17 +114,31 @@ function extractConfigDetails(
     if (typeof message === 'string') {
       messageText = message;
     } else if (Array.isArray(message)) {
-      messageText = message.map((part: any) => part.text || '').join(' ');
-    } else if (message && typeof message === 'object' && message.text) {
+      messageText = message
+        .map((part: unknown) =>
+          part &&
+          typeof part === 'object' &&
+          'text' in part &&
+          typeof part.text === 'string'
+            ? part.text
+            : '',
+        )
+        .join(' ');
+    } else if (
+      message &&
+      typeof message === 'object' &&
+      'text' in message &&
+      typeof message.text === 'string'
+    ) {
       messageText = message.text;
     }
-  } catch (e) {
+  } catch (_e) {
     messageText = 'Message present';
   }
   details.messageSnippet =
-    messageText.length > 50
-      ? messageText.substring(0, 50) + '...'
-      : messageText;
+    messageText.trim().length > 50
+      ? messageText.trim().substring(0, 50) + '...'
+      : messageText.trim();
 
   return details;
 }
@@ -293,14 +319,10 @@ export class GeminiChat {
     // Check if config has a fallback handler (set by CLI package)
     const fallbackHandler = this.config.flashFallbackHandler;
     if (typeof fallbackHandler === 'function') {
-      try {
-        const accepted = await fallbackHandler(currentModel, fallbackModel);
-        if (accepted) {
-          this.config.setModel(fallbackModel);
-          return fallbackModel;
-        }
-      } catch (error) {
-        throw error;
+      const accepted = await fallbackHandler(currentModel, fallbackModel);
+      if (accepted) {
+        this.config.setModel(fallbackModel);
+        return fallbackModel;
       }
     }
 

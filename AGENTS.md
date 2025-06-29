@@ -24,7 +24,6 @@
 - `npm run test` - Run all tests
 - `npm run test --workspace packages/cli` - Run tests for specific package
 - `npm run format` - Format code with Prettier
-- `npm run preflight` - Full CI check (clean, format, lint, build, typecheck, test)
 
 ## Code Style
 

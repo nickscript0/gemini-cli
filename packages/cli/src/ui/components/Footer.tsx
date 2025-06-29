@@ -137,7 +137,10 @@ export const Footer: React.FC<FooterProps> = ({
             <Box justifyContent="flex-start" marginTop={0}>
               <Text color={Colors.Gray}>
                 {currentRequest.configDetails.messageSnippet && (
-                  <Text>"{currentRequest.configDetails.messageSnippet}" </Text>
+                  <Text>
+                    &quot;{currentRequest.configDetails.messageSnippet}
+                    &quot;{' '}
+                  </Text>
                 )}
                 {currentRequest.configDetails.toolsCount && (
                   <Text color={Colors.AccentBlue}>
@@ -156,8 +159,9 @@ export const Footer: React.FC<FooterProps> = ({
                 )}
                 {currentRequest.configDetails.systemInstructionSnippet && (
                   <Text color={Colors.LightBlue}>
-                    sys:"{currentRequest.configDetails.systemInstructionSnippet}
-                    "
+                    sys:&quot;
+                    {currentRequest.configDetails.systemInstructionSnippet}
+                    &quot;
                   </Text>
                 )}
               </Text>
