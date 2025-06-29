@@ -121,11 +121,48 @@ export const Footer: React.FC<FooterProps> = ({
       </Box>
 
       {/* Request Status Line */}
-      {currentRequest && currentRequest.status === 'active' && (
-        <Box justifyContent="flex-start" marginTop={0}>
-          <Text color={Colors.Gray}>
-            {currentRequest.description} ({duration.toFixed(1)}s)
-          </Text>
+      {currentRequest && (
+        <Box flexDirection="column" marginTop={0}>
+          <Box justifyContent="flex-start">
+            <Text color={Colors.Gray}>
+              {currentRequest.description}{' '}
+              {currentRequest.status === 'active'
+                ? `(${duration.toFixed(1)}s)`
+                : currentRequest.status === 'completed'
+                  ? `(${duration.toFixed(1)}s - completed)`
+                  : `(${duration.toFixed(1)}s - error)`}
+            </Text>
+          </Box>
+          {currentRequest.configDetails && (
+            <Box justifyContent="flex-start" marginTop={0}>
+              <Text color={Colors.Gray}>
+                {currentRequest.configDetails.messageSnippet && (
+                  <Text>"{currentRequest.configDetails.messageSnippet}" </Text>
+                )}
+                {currentRequest.configDetails.toolsCount && (
+                  <Text color={Colors.AccentBlue}>
+                    tools:{currentRequest.configDetails.toolsCount}{' '}
+                  </Text>
+                )}
+                {currentRequest.configDetails.temperature !== undefined && (
+                  <Text color={Colors.AccentYellow}>
+                    temp:{currentRequest.configDetails.temperature}{' '}
+                  </Text>
+                )}
+                {currentRequest.configDetails.maxOutputTokens && (
+                  <Text color={Colors.AccentGreen}>
+                    max:{currentRequest.configDetails.maxOutputTokens}{' '}
+                  </Text>
+                )}
+                {currentRequest.configDetails.systemInstructionSnippet && (
+                  <Text color={Colors.LightBlue}>
+                    sys:"{currentRequest.configDetails.systemInstructionSnippet}
+                    "
+                  </Text>
+                )}
+              </Text>
+            </Box>
+          )}
         </Box>
       )}
     </Box>

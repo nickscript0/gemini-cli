@@ -37,6 +37,87 @@ import {
 import { DEFAULT_GEMINI_FLASH_MODEL } from '../config/models.js';
 
 /**
+ * Extracts config details for request status display
+ */
+function extractConfigDetails(
+  config: GenerateContentConfig | undefined,
+  message: any,
+): {
+  toolsCount?: number;
+  systemInstructionSnippet?: string;
+  messageSnippet?: string;
+  temperature?: number;
+  maxOutputTokens?: number;
+} {
+  const details: {
+    toolsCount?: number;
+    systemInstructionSnippet?: string;
+    messageSnippet?: string;
+    temperature?: number;
+    maxOutputTokens?: number;
+  } = {};
+
+  if (config) {
+    // Extract tools count
+    if (config.tools) {
+      details.toolsCount = Array.isArray(config.tools)
+        ? config.tools.length
+        : 1;
+    }
+
+    // Extract system instruction snippet (first 50 chars)
+    if (config.systemInstruction) {
+      let systemText = '';
+      try {
+        // Try to extract text from system instruction
+        const instruction = config.systemInstruction as any;
+        if (typeof instruction === 'string') {
+          systemText = instruction;
+        } else if (instruction.parts && Array.isArray(instruction.parts)) {
+          systemText = instruction.parts
+            .map((part: any) => part.text || '')
+            .join(' ');
+        }
+      } catch (e) {
+        systemText = 'System instruction present';
+      }
+      details.systemInstructionSnippet =
+        systemText.length > 50
+          ? systemText.substring(0, 50) + '...'
+          : systemText;
+    }
+
+    // Extract temperature and maxOutputTokens
+    if (config.temperature !== undefined) {
+      details.temperature = config.temperature;
+    }
+    if (config.maxOutputTokens !== undefined) {
+      details.maxOutputTokens = config.maxOutputTokens;
+    }
+  }
+
+  // Extract message snippet (first 50 chars)
+  let messageText = '';
+  try {
+    if (typeof message === 'string') {
+      messageText = message;
+    } else if (Array.isArray(message)) {
+      messageText = message.map((part: any) => part.text || '').join(' ');
+    } else if (message && typeof message === 'object' && message.text) {
+      messageText = message.text;
+    }
+  } catch (e) {
+    messageText = 'Message present';
+  }
+  details.messageSnippet =
+    messageText.length > 50
+      ? messageText.substring(0, 50) + '...'
+      : messageText;
+
+  return details;
+}
+
+/**
  * Returns true if the response is valid, false otherwise.
  */
 function isValidResponse(response: GenerateContentResponse): boolean {
@@ -258,11 +339,13 @@ export class GeminiChat {
     // Track request status
     const requestId = `prompt-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
     const requestSize = JSON.stringify(params.message).length;
+    const configDetails = extractConfigDetails(params.config, params.message);
     const requestInfo = {
       id: requestId,
       type: 'prompt' as const,
       description: `Prompt request of size ${requestSize}`,
       size: requestSize,
+      configDetails,
     };
 
     this.config.requestStatusHandler?.('start', requestInfo);
@@ -368,11 +451,13 @@ export class GeminiChat {
     // Track request status
     const requestId = `prompt-stream-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
     const requestSize = JSON.stringify(params.message).length;
+    const configDetails = extractConfigDetails(params.config, params.message);
     const requestInfo = {
       id: requestId,
       type: 'prompt' as const,
       description: `Prompt stream request of size ${requestSize}`,
       size: requestSize,
+      configDetails,
     };
 
     this.config.requestStatusHandler?.('start', requestInfo);

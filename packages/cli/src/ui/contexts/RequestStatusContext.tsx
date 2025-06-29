@@ -12,6 +12,14 @@ import React, {
   ReactNode,
 } from 'react';
 
+export interface RequestConfigDetails {
+  toolsCount?: number;
+  systemInstructionSnippet?: string;
+  messageSnippet?: string;
+  temperature?: number;
+  maxOutputTokens?: number;
+}
+
 export interface RequestStatus {
   id: string;
   type: 'prompt' | 'json' | 'content';
@@ -19,6 +27,7 @@ export interface RequestStatus {
   size: number;
   startTime: number;
   status: 'active' | 'completed' | 'error';
+  configDetails?: RequestConfigDetails;
 }
 
 interface RequestStatusContextType {
@@ -57,7 +66,6 @@ export const RequestStatusProvider: React.FC<RequestStatusProviderProps> = ({
   // Timer effect to update duration
   useEffect(() => {
     if (!currentRequest || currentRequest.status !== 'active') {
-      setDuration(0);
       return;
     }
 
@@ -89,17 +97,6 @@ export const RequestStatusProvider: React.FC<RequestStatusProviderProps> = ({
       }
       return prev;
     });
-
-    // Clear the request after a short delay to show completion status
-    setTimeout(() => {
-      setCurrentRequest((prev) => {
-        if (prev && prev.id === id) {
-          return null;
-        }
-        return prev;
-      });
-      setDuration(0);
-    }, 1000);
   };
 
   return (
