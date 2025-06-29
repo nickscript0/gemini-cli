@@ -53,7 +53,7 @@ describe('Flash Fallback Integration', () => {
   it('should trigger fallback after N consecutive 429 errors for OAuth users', async () => {
     let fallbackCalled = false;
     let fallbackModel = '';
-    const EXPECTED_DOWNGRADE_ATTEMPTS = 5;
+    const EXPECTED_DOWNGRADE_ATTEMPTS = 2;
 
     // Mock function that simulates exactly 2 429 errors, then succeeds after fallback
     const mockApiCall = vi.fn();

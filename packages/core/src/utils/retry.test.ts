@@ -41,8 +41,8 @@ class NonRetryableError extends Error {
 }
 
 describe('retryWithBackoff', () => {
-  const EXPECTED_MAX_ATTEMPTS = 10;
-  const EXPECTED_DOWNGRADE_ATTEMPTS = 5;
+  const EXPECTED_MAX_ATTEMPTS = 5;
+  const EXPECTED_DOWNGRADE_ATTEMPTS = 2;
 
   beforeEach(() => {
     vi.useFakeTimers();

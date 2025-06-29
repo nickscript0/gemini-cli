@@ -16,8 +16,10 @@ export interface RetryOptions {
   authType?: string;
 }
 
+const DOWNGRADE_ATTEMPTS = 2;
+
 const DEFAULT_RETRY_OPTIONS: RetryOptions = {
-  maxAttempts: 10,
+  maxAttempts: 5,
   initialDelayMs: 5000,
   maxDelayMs: 30000, // 30 seconds
   shouldRetry: defaultShouldRetry,
@@ -111,7 +113,7 @@ export async function retryWithBackoff<T>(
 
       // If we have persistent 429s and a fallback callback for OAuth
       if (
-        consecutive429Count >= 5 &&
+        consecutive429Count >= DOWNGRADE_ATTEMPTS &&
         onPersistent429 &&
         authType === AuthType.LOGIN_WITH_GOOGLE_PERSONAL
       ) {
