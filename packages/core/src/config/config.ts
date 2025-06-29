@@ -98,6 +98,19 @@ export type FlashFallbackHandler = (
 
 export type Retry429CountHandler = (count: number) => void;
 
+export interface RequestStatusInfo {
+  id: string;
+  type: 'prompt' | 'json' | 'content';
+  description: string;
+  size: number;
+}
+
+export type RequestStatusHandler = (
+  event: 'start' | 'end',
+  info: RequestStatusInfo,
+  status?: 'completed' | 'error',
+) => void;
+
 export interface ConfigParameters {
   sessionId: string;
   embeddingModel?: string;
@@ -172,6 +185,7 @@ export class Config {
   private modelSwitchedDuringSession: boolean = false;
   flashFallbackHandler?: FlashFallbackHandler;
   retry429CountHandler?: Retry429CountHandler;
+  requestStatusHandler?: RequestStatusHandler;
 
   constructor(params: ConfigParameters) {
     this.sessionId = params.sessionId;
@@ -295,6 +309,10 @@ export class Config {
 
   setRetry429CountHandler(handler: Retry429CountHandler): void {
     this.retry429CountHandler = handler;
+  }
+
+  setRequestStatusHandler(handler: RequestStatusHandler): void {
+    this.requestStatusHandler = handler;
   }
 
   getEmbeddingModel(): string {

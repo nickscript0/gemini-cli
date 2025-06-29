@@ -63,6 +63,11 @@ import {
   useSessionStats,
 } from './contexts/SessionContext.js';
 import { RetryProvider, useRetryContext } from './contexts/RetryContext.js';
+import {
+  RequestStatusProvider,
+  useRequestStatus,
+} from './contexts/RequestStatusContext.js';
+import type { RequestStatusInfo } from '@google/gemini-cli-core';
 import { useGitBranchName } from './hooks/useGitBranchName.js';
 import { useBracketedPaste } from './hooks/useBracketedPaste.js';
 import { useTextBuffer } from './components/shared/text-buffer.js';
@@ -85,7 +90,9 @@ interface AppProps {
 export const AppWrapper = (props: AppProps) => (
   <SessionStatsProvider>
     <RetryProvider>
-      <App {...props} />
+      <RequestStatusProvider>
+        <App {...props} />
+      </RequestStatusProvider>
     </RetryProvider>
   </SessionStatsProvider>
 );
@@ -277,6 +284,27 @@ const App = ({ config, settings, startupWarnings = [] }: AppProps) => {
       config.setRetry429CountHandler(retry429CountHandler);
     }
   }, [config, setConsecutive429Count]);
+
+  // Set up request status handler
+  const { startRequest, endRequest } = useRequestStatus();
+  useEffect(() => {
+    const requestStatusHandler = (
+      event: 'start' | 'end',
+      info: RequestStatusInfo,
+      status?: 'completed' | 'error',
+    ) => {
+      if (event === 'start') {
+        startRequest(info);
+      } else if (event === 'end') {
+        endRequest(info.id, status || 'completed');
+      }
+    };
+
+    // Check if the method exists before calling it (for backward compatibility)
+    if (typeof config.setRequestStatusHandler === 'function') {
+      config.setRequestStatusHandler(requestStatusHandler);
+    }
+  }, [config, startRequest, endRequest]);
 
   const {
     handleSlashCommand,

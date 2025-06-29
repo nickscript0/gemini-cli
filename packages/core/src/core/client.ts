@@ -256,6 +256,18 @@ export class GeminiClient {
     model: string = DEFAULT_GEMINI_FLASH_MODEL,
     config: GenerateContentConfig = {},
   ): Promise<Record<string, unknown>> {
+    // Track request status
+    const requestId = `json-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
+    const requestSize = JSON.stringify(contents).length;
+    const requestInfo = {
+      id: requestId,
+      type: 'json' as const,
+      description: `JSON generation request of size ${requestSize}`,
+      size: requestSize,
+    };
+
+    this.config.requestStatusHandler?.('start', requestInfo);
+
     try {
       const userMemory = this.config.getUserMemory();
       const systemInstruction = getCoreSystemPrompt(userMemory);
@@ -295,10 +307,19 @@ export class GeminiClient {
           contents,
           'generateJson-empty-response',
         );
+
+        // Track request error
+        this.config.requestStatusHandler?.('end', requestInfo, 'error');
+
         throw error;
       }
       try {
-        return JSON.parse(text);
+        const result = JSON.parse(text);
+
+        // Track request completion
+        this.config.requestStatusHandler?.('end', requestInfo, 'completed');
+
+        return result;
       } catch (parseError) {
         await reportError(
           parseError,
@@ -309,6 +330,10 @@ export class GeminiClient {
           },
           'generateJson-parse',
         );
+
+        // Track request error
+        this.config.requestStatusHandler?.('end', requestInfo, 'error');
+
         throw new Error(
           `Failed to parse API response as JSON: ${getErrorMessage(parseError)}`,
         );
@@ -332,6 +357,10 @@ export class GeminiClient {
         contents,
         'generateJson-api',
       );
+
+      // Track request error
+      this.config.requestStatusHandler?.('end', requestInfo, 'error');
+
       throw new Error(
         `Failed to generate JSON content: ${getErrorMessage(error)}`,
       );
@@ -343,6 +372,18 @@ export class GeminiClient {
     generationConfig: GenerateContentConfig,
     abortSignal: AbortSignal,
   ): Promise<GenerateContentResponse> {
+    // Track request status
+    const requestId = `content-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
+    const requestSize = JSON.stringify(contents).length;
+    const requestInfo = {
+      id: requestId,
+      type: 'content' as const,
+      description: `Content generation request of size ${requestSize}`,
+      size: requestSize,
+    };
+
+    this.config.requestStatusHandler?.('start', requestInfo);
+
     const modelToUse = this.model;
     const configToUse: GenerateContentConfig = {
       ...this.generateContentConfig,
@@ -372,6 +413,10 @@ export class GeminiClient {
         authType: this.config.getContentGeneratorConfig()?.authType,
         on429CountChange: this.config.retry429CountHandler,
       });
+
+      // Track request completion
+      this.config.requestStatusHandler?.('end', requestInfo, 'completed');
+
       return result;
     } catch (error: unknown) {
       if (abortSignal.aborted) {
@@ -387,6 +432,10 @@ export class GeminiClient {
         },
         'generateContent-api',
       );
+
+      // Track request error
+      this.config.requestStatusHandler?.('end', requestInfo, 'error');
+
       throw new Error(
         `Failed to generate content with model ${modelToUse}: ${getErrorMessage(error)}`,
       );

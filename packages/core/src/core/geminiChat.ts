@@ -219,7 +219,7 @@ export class GeminiChat {
           return fallbackModel;
         }
       } catch (error) {
-        console.warn('Flash fallback handler failed:', error);
+        throw error;
       }
     }
 
@@ -254,6 +254,18 @@ export class GeminiChat {
     const requestContents = this.getHistory(true).concat(userContent);
 
     this._logApiRequest(requestContents, this.config.getModel());
+
+    // Track request status
+    const requestId = `prompt-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
+    const requestSize = JSON.stringify(params.message).length;
+    const requestInfo = {
+      id: requestId,
+      type: 'prompt' as const,
+      description: `Prompt request of size ${requestSize}`,
+      size: requestSize,
+    };
+
+    this.config.requestStatusHandler?.('start', requestInfo);
 
     const startTime = Date.now();
     let response: GenerateContentResponse;
@@ -310,6 +322,10 @@ export class GeminiChat {
         // Resets sendPromise to avoid subsequent calls failing
         this.sendPromise = Promise.resolve();
       });
+
+      // Track request completion
+      this.config.requestStatusHandler?.('end', requestInfo, 'completed');
+
       return response;
     } catch (error) {
       const durationMs = Date.now() - startTime;
@@ -348,6 +364,18 @@ export class GeminiChat {
     const userContent = createUserContent(params.message);
     const requestContents = this.getHistory(true).concat(userContent);
     this._logApiRequest(requestContents, this.config.getModel());
+
+    // Track request status
+    const requestId = `prompt-stream-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
+    const requestSize = JSON.stringify(params.message).length;
+    const requestInfo = {
+      id: requestId,
+      type: 'prompt' as const,
+      description: `Prompt stream request of size ${requestSize}`,
+      size: requestSize,
+    };
+
+    this.config.requestStatusHandler?.('start', requestInfo);
 
     const startTime = Date.now();
 
@@ -390,6 +418,10 @@ export class GeminiChat {
         userContent,
         startTime,
       );
+
+      // Track request completion
+      this.config.requestStatusHandler?.('end', requestInfo, 'completed');
+
       return result;
     } catch (error) {
       const durationMs = Date.now() - startTime;

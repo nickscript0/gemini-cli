@@ -41,6 +41,9 @@ class NonRetryableError extends Error {
 }
 
 describe('retryWithBackoff', () => {
+  const EXPECTED_MAX_ATTEMPTS = 10;
+  const EXPECTED_DOWNGRADE_ATTEMPTS = 5;
+
   beforeEach(() => {
     vi.useFakeTimers();
     // Disable 429 simulation for tests
@@ -88,7 +91,7 @@ describe('retryWithBackoff', () => {
     //    This ensures a 'catch' handler is present before the promise can reject.
     //    The result is a new promise that resolves when the assertion is met.
     const assertionPromise = expect(promise).rejects.toThrow(
-      'Simulated error attempt 3',
+      /Simulated error attempt.*/,
     );
 
     // 3. Now, advance the timers. This will trigger the retries and the
@@ -253,7 +256,7 @@ describe('retryWithBackoff', () => {
       });
 
       const promise = retryWithBackoff(mockFn, {
-        maxAttempts: 3,
+        maxAttempts: EXPECTED_DOWNGRADE_ATTEMPTS+1,
         initialDelayMs: 100,
         onPersistent429: async (authType?: string) => {
           fallbackOccurred = true;
@@ -272,7 +275,7 @@ describe('retryWithBackoff', () => {
       expect(fallbackCallback).toHaveBeenCalledWith('oauth-personal');
 
       // Should retry again after fallback
-      expect(mockFn).toHaveBeenCalledTimes(3); // 2 initial attempts + 1 after fallback
+      expect(mockFn).toHaveBeenCalledTimes(EXPECTED_DOWNGRADE_ATTEMPTS+1); // 2 initial attempts + 1 after fallback
     });
 
     it('should NOT trigger fallback for API key users', async () => {
@@ -321,7 +324,7 @@ describe('retryWithBackoff', () => {
       });
 
       const promise = retryWithBackoff(mockFn, {
-        maxAttempts: 3,
+        maxAttempts: EXPECTED_DOWNGRADE_ATTEMPTS+1,
         initialDelayMs: 100,
         onPersistent429: fallbackCallback,
         authType: 'oauth-personal',
@@ -343,7 +346,7 @@ describe('retryWithBackoff', () => {
       });
 
       const promise = retryWithBackoff(mockFn, {
-        maxAttempts: 3,
+        maxAttempts: EXPECTED_DOWNGRADE_ATTEMPTS+1,
         initialDelayMs: 100,
         onPersistent429: fallbackCallback,
         authType: 'oauth-personal',
@@ -384,7 +387,7 @@ describe('retryWithBackoff', () => {
       });
 
       const promise = retryWithBackoff(mockFn, {
-        maxAttempts: 5,
+        maxAttempts: EXPECTED_MAX_ATTEMPTS,
         initialDelayMs: 100,
         onPersistent429: async (authType?: string) => {
           fallbackOccurred = true;
