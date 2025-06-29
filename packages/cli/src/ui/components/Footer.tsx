@@ -138,6 +138,7 @@ export const Footer: React.FC<FooterProps> = ({
               <Text color={Colors.Gray}>
                 {currentRequest.configDetails.messageSnippet && (
                   <Text>
+                    <Text color={Colors.AccentRed}>Prompt:</Text>
                     &quot;{currentRequest.configDetails.messageSnippet}
                     &quot;{' '}
                   </Text>

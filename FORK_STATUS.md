@@ -30,21 +30,21 @@ This fork extends the original Gemini CLI with additional features and improveme
 #### Technical Details:
 
 - **Display Format**:
-  - Line 1: `"[Type] request of size [X] ([duration]s)"`
-  - Line 2: `"[message snippet]" tools:[N] temp:[X] max:[N] sys:"[system snippet]"`
+  - Line 1: `\"[Type] request of size [X] ([duration]s)\"`
+  - Line 2: `Prompt:\"[message snippet]\" tools:[N] temp:[X] max:[N] sys:\"[system snippet]\"`
 - **Update Frequency**: 100ms timer for real-time duration updates
 - **Request Types Tracked**: Prompt, JSON generation, Content generation (all with config details)
 - **Size Calculation**: JSON.stringify() length of request payloads
 - **Config Extraction**: Helper function extracts key parameters from GenerateContentConfig
 - **Integration Pattern**: Uses same callback pattern as existing 429 rate limit tracking
-- **Color Coding**: Different colors for different parameter types (tools=blue, temp=yellow, max=green, sys=light blue)
+- **Color Coding**: Different colors for different parameter types (Prompt=red, tools=blue, temp=yellow, max=green, sys=light blue)
 
 #### Features:
 
 - Real-time duration display during active requests
 - Request size tracking for performance awareness
 - **Enhanced config details display including:**
-  - **Message snippet** (first 50 characters of user input, trimmed of whitespace)
+  - **Message snippet** (first 50 characters of user input, trimmed of whitespace, with colored "Prompt:" prefix)
   - **Tools count** (number of tools available to the model)
   - **Temperature setting** (model creativity parameter)
   - **Max output tokens** (response length limit)
