@@ -94,13 +94,14 @@ This enhancement helps users understand exactly what parameters are being sent t
 - **Display Format**: `reqs: P:X J:Y C:Z` where X, Y, Z are the counts for Prompt, JSON, and Content requests respectively
 - **Color Coding**: Prompt requests (red), JSON requests (blue), Content requests (green)
 - **Location**: Integrated into the main footer line next to context percentage and 429 error counts
-- **Persistence**: Counts persist throughout the session and increment with each new request
+- **Reset Behavior**: Counts reset to 0 each time the user submits new input (presses enter), then accumulate during that user session
 - **Conditional Display**: Only shows when at least one request has been made
 
 #### Technical Implementation:
 
 - Extended `RequestStatusContext` with `RequestTypeCounts` interface
 - Added `requestCounts` state to track cumulative counts per request type
-- Modified `startRequest` function to increment appropriate counter
+- Added `resetRequestCounts` function to reset all counts to 0 when user submits new input
+- Modified `handleFinalSubmit` in App.tsx to call `resetRequestCounts` before processing new user input
 - Updated Footer component to display counts with color-coded formatting
 - Maintains backward compatibility with existing request status functionality

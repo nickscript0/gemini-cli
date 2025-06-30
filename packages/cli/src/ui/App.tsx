@@ -286,7 +286,7 @@ const App = ({ config, settings, startupWarnings = [] }: AppProps) => {
   }, [config, setConsecutive429Count]);
 
   // Set up request status handler
-  const { startRequest, endRequest } = useRequestStatus();
+  const { startRequest, endRequest, resetRequestCounts } = useRequestStatus();
   useEffect(() => {
     const requestStatusHandler = (
       event: 'start' | 'end',
@@ -474,10 +474,11 @@ const App = ({ config, settings, startupWarnings = [] }: AppProps) => {
     (submittedValue: string) => {
       const trimmedValue = submittedValue.trim();
       if (trimmedValue.length > 0) {
+        resetRequestCounts();
         submitQuery(trimmedValue);
       }
     },
-    [submitQuery],
+    [submitQuery, resetRequestCounts],
   );
 
   const logger = useLogger();

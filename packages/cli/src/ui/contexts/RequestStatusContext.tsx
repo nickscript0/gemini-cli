@@ -42,6 +42,7 @@ interface RequestStatusContextType {
   requestCounts: RequestTypeCounts;
   startRequest: (request: Omit<RequestStatus, 'startTime' | 'status'>) => void;
   endRequest: (id: string, status: 'completed' | 'error') => void;
+  resetRequestCounts: () => void;
 }
 
 const RequestStatusContext = createContext<
@@ -117,6 +118,14 @@ export const RequestStatusProvider: React.FC<RequestStatusProviderProps> = ({
     });
   };
 
+  const resetRequestCounts = () => {
+    setRequestCounts({
+      prompt: 0,
+      json: 0,
+      content: 0,
+    });
+  };
+
   return (
     <RequestStatusContext.Provider
       value={{
@@ -125,6 +134,7 @@ export const RequestStatusProvider: React.FC<RequestStatusProviderProps> = ({
         requestCounts,
         startRequest,
         endRequest,
+        resetRequestCounts,
       }}
     >
       {children}
