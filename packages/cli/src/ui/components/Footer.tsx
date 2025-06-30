@@ -44,7 +44,7 @@ export const Footer: React.FC<FooterProps> = ({
   const limit = tokenLimit(model);
   const percentage = totalTokenCount / limit;
   const { consecutive429Count } = useRetryContext();
-  const { currentRequest, duration } = useRequestStatus();
+  const { currentRequest, duration, requestCounts } = useRequestStatus();
 
   return (
     <Box flexDirection="column" marginTop={1} width="100%">
@@ -96,6 +96,21 @@ export const Footer: React.FC<FooterProps> = ({
                 <Text color={Colors.AccentRed}>
                   {' '}
                   | 429×{consecutive429Count}
+                </Text>
+              )}
+              {(requestCounts.prompt > 0 ||
+                requestCounts.json > 0 ||
+                requestCounts.content > 0) && (
+                <Text color={Colors.Gray}>
+                  {' '}
+                  | reqs:{' '}
+                  <Text color={Colors.AccentRed}>
+                    P:{requestCounts.prompt}
+                  </Text>{' '}
+                  <Text color={Colors.AccentBlue}>J:{requestCounts.json}</Text>{' '}
+                  <Text color={Colors.AccentGreen}>
+                    C:{requestCounts.content}
+                  </Text>
                 </Text>
               )}
             </Text>

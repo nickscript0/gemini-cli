@@ -30,9 +30,16 @@ export interface RequestStatus {
   configDetails?: RequestConfigDetails;
 }
 
+export interface RequestTypeCounts {
+  prompt: number;
+  json: number;
+  content: number;
+}
+
 interface RequestStatusContextType {
   currentRequest: RequestStatus | null;
   duration: number;
+  requestCounts: RequestTypeCounts;
   startRequest: (request: Omit<RequestStatus, 'startTime' | 'status'>) => void;
   endRequest: (id: string, status: 'completed' | 'error') => void;
 }
@@ -62,6 +69,11 @@ export const RequestStatusProvider: React.FC<RequestStatusProviderProps> = ({
     null,
   );
   const [duration, setDuration] = useState<number>(0);
+  const [requestCounts, setRequestCounts] = useState<RequestTypeCounts>({
+    prompt: 0,
+    json: 0,
+    content: 0,
+  });
 
   // Timer effect to update duration
   useEffect(() => {
@@ -88,6 +100,12 @@ export const RequestStatusProvider: React.FC<RequestStatusProviderProps> = ({
     };
     setCurrentRequest(newRequest);
     setDuration(0);
+
+    // Increment the count for this request type
+    setRequestCounts((prev) => ({
+      ...prev,
+      [request.type]: prev[request.type] + 1,
+    }));
   };
 
   const endRequest = (id: string, status: 'completed' | 'error') => {
@@ -104,6 +122,7 @@ export const RequestStatusProvider: React.FC<RequestStatusProviderProps> = ({
       value={{
         currentRequest,
         duration,
+        requestCounts,
         startRequest,
         endRequest,
       }}

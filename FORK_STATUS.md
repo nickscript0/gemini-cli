@@ -10,9 +10,9 @@ This fork extends the original Gemini CLI with additional features and improveme
 
 ### 1. Request Status Display Feature
 
-**Status**: ✅ Complete (Enhanced)  
-**Date**: June 29, 2025  
-**Description**: Added real-time request status display in the CLI footer showing ongoing API requests with size, duration, and detailed configuration information.
+**Status**: ✅ Complete (Enhanced with Counts)  
+**Date**: June 30, 2025  
+**Description**: Added real-time request status display in the CLI footer showing ongoing API requests with size, duration, detailed configuration information, and cumulative request type counts.
 
 #### Files Added:
 
@@ -43,6 +43,7 @@ This fork extends the original Gemini CLI with additional features and improveme
 
 - Real-time duration display during active requests
 - Request size tracking for performance awareness
+- **Request type counts display** showing cumulative counts for each request type (P:prompt, J:json, C:content) with color coding
 - **Enhanced config details display including:**
   - **Message snippet** (first 50 characters of user input, trimmed of whitespace, with colored "Prompt:" prefix)
   - **Tools count** (number of tools available to the model)
@@ -68,7 +69,7 @@ Potential future enhancements:
 
 ---
 
-_Last Updated: June 29, 2025_
+_Last Updated: June 30, 2025_
 
 ## Recent Enhancement (June 29, 2025)
 
@@ -85,3 +86,21 @@ This enhancement helps users understand exactly what parameters are being sent t
 - Message snippet display for JSON generation requests
 - Configuration parameter visibility (tools, temperature, max tokens, system instructions)
 - Consistent color-coded parameter display across all request types
+
+## Latest Enhancement (June 30, 2025)
+
+**Request Type Counts Display**: Added cumulative request tracking and display functionality to the footer. The system now tracks and displays the total number of requests made for each request type during the session:
+
+- **Display Format**: `reqs: P:X J:Y C:Z` where X, Y, Z are the counts for Prompt, JSON, and Content requests respectively
+- **Color Coding**: Prompt requests (red), JSON requests (blue), Content requests (green)
+- **Location**: Integrated into the main footer line next to context percentage and 429 error counts
+- **Persistence**: Counts persist throughout the session and increment with each new request
+- **Conditional Display**: Only shows when at least one request has been made
+
+#### Technical Implementation:
+
+- Extended `RequestStatusContext` with `RequestTypeCounts` interface
+- Added `requestCounts` state to track cumulative counts per request type
+- Modified `startRequest` function to increment appropriate counter
+- Updated Footer component to display counts with color-coded formatting
+- Maintains backward compatibility with existing request status functionality
