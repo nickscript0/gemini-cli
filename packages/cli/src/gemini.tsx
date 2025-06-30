@@ -84,6 +84,7 @@ async function relaunchWithAdditionalArgs(additionalArgs: string[]) {
 export async function main() {
   const workspaceRoot = process.cwd();
   const settings = loadSettings(workspaceRoot);
+  console.log('Loaded settings:', settings.merged);
 
   await cleanupCheckpoints();
   if (settings.errors.length > 0) {
