@@ -92,27 +92,6 @@ export const Footer: React.FC<FooterProps> = ({
             {model}{' '}
             <Text color={Colors.Gray}>
               ({((1 - percentage) * 100).toFixed(0)}% context left)
-              {consecutive429Count >= 0 && (
-                <Text color={Colors.AccentRed}>
-                  {' '}
-                  | 429×{consecutive429Count}
-                </Text>
-              )}
-              {(requestCounts.prompt > 0 ||
-                requestCounts.json > 0 ||
-                requestCounts.content > 0) && (
-                <Text color={Colors.Gray}>
-                  {' '}
-                  | reqs:{' '}
-                  <Text color={Colors.AccentRed}>
-                    P:{requestCounts.prompt}
-                  </Text>{' '}
-                  <Text color={Colors.AccentBlue}>J:{requestCounts.json}</Text>{' '}
-                  <Text color={Colors.AccentGreen}>
-                    C:{requestCounts.content}
-                  </Text>
-                </Text>
-              )}
             </Text>
           </Text>
           {corgiMode && (
@@ -134,7 +113,34 @@ export const Footer: React.FC<FooterProps> = ({
           {showMemoryUsage && <MemoryUsageDisplay />}
         </Box>
       </Box>
-
+      {/* Request Counts and 429 Status Line */}
+      {(consecutive429Count >= 0 ||
+        requestCounts.prompt > 0 ||
+        requestCounts.json > 0 ||
+        requestCounts.content > 0) && (
+        <Box justifyContent="flex-start" marginTop={0}>
+          <Text color={Colors.Gray}>
+            {consecutive429Count >= 0 && (
+              <Text color={Colors.AccentRed}>429×{consecutive429Count}</Text>
+            )}
+            {(requestCounts.prompt > 0 ||
+              requestCounts.json > 0 ||
+              requestCounts.content > 0) && (
+              <Text color={Colors.Gray}>
+                {consecutive429Count >= 0 ? ' | ' : ''}
+                reqs:{' '}
+                <Text color={Colors.AccentRed}>
+                  P:{requestCounts.prompt}
+                </Text>{' '}
+                <Text color={Colors.AccentBlue}>J:{requestCounts.json}</Text>{' '}
+                <Text color={Colors.AccentGreen}>
+                  C:{requestCounts.content}
+                </Text>
+              </Text>
+            )}
+          </Text>
+        </Box>
+      )}
       {/* Request Status Line */}
       {currentRequest && (
         <Box flexDirection="column" marginTop={0}>
