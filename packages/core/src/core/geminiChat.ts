@@ -7,6 +7,9 @@
 // DISCLAIMER: This is a copied version of https://github.com/googleapis/js-genai/blob/main/src/chats.ts with the intention of working around a key bug
 // where function responses are not treated as "valid" responses: https://b.corp.google.com/issues/420354090
 
+import { promises as fs } from 'fs';
+import * as os from 'os';
+import * as path from 'path';
 import {
   GenerateContentResponse,
   Content,
@@ -141,6 +144,22 @@ export function extractConfigDetails(
       : messageText.trim();
 
   return details;
+}
+
+/**
+ * Logs the prompt to a file.
+ */
+async function logPromptToFile(prompt: string): Promise<void> {
+  try {
+    const logDir = path.join(os.homedir(), '.gemini');
+    await fs.mkdir(logDir, { recursive: true });
+    const logFile = path.join(logDir, 'prompt_log.txt');
+    const timestamp = new Date().toISOString();
+    await fs.appendFile(logFile, `${timestamp}: ${prompt}\n`);
+  } catch (_error) {
+    // Silently fail to avoid disrupting the user experience.
+    // We can add more robust error handling here if needed.
+  }
 }
 
 /**
@@ -356,6 +375,8 @@ export class GeminiChat {
     const userContent = createUserContent(params.message);
     const requestContents = this.getHistory(true).concat(userContent);
 
+    logPromptToFile(JSON.stringify(requestContents));
+
     this._logApiRequest(requestContents, this.config.getModel());
 
     // Track request status
@@ -468,6 +489,7 @@ export class GeminiChat {
     await this.sendPromise;
     const userContent = createUserContent(params.message);
     const requestContents = this.getHistory(true).concat(userContent);
+    logPromptToFile(JSON.stringify(requestContents));
     this._logApiRequest(requestContents, this.config.getModel());
 
     // Track request status
