@@ -147,6 +147,18 @@ export function extractConfigDetails(
 }
 
 /**
+ * Trims a string to 100 characters showing start and end.
+ */
+function trimPromptString(str: string): string {
+  if (str.length <= 100) {
+    return str;
+  }
+  const start = str.substring(0, 50);
+  const end = str.substring(str.length - 50);
+  return `${start}...${end}`;
+}
+
+/**
  * Logs the prompt to a file.
  */
 async function logPromptToFile(prompt: string): Promise<void> {
@@ -155,7 +167,75 @@ async function logPromptToFile(prompt: string): Promise<void> {
     await fs.mkdir(logDir, { recursive: true });
     const logFile = path.join(logDir, 'prompt_log.txt');
     const timestamp = new Date().toISOString();
-    await fs.appendFile(logFile, `${timestamp}: ${prompt}\n`);
+    const trimmedPrompt = trimPromptString(prompt);
+    await fs.appendFile(
+      logFile,
+      `${timestamp}: PROMPT REQUEST: ${trimmedPrompt}\n`,
+    );
+  } catch (_error) {
+    // Silently fail to avoid disrupting the user experience.
+    // We can add more robust error handling here if needed.
+  }
+}
+
+/**
+ * Logs the response to a file.
+ */
+async function logResponseToFile(response: string): Promise<void> {
+  try {
+    const logDir = path.join(os.homedir(), '.gemini');
+    await fs.mkdir(logDir, { recursive: true });
+    const logFile = path.join(logDir, 'prompt_log.txt');
+    const timestamp = new Date().toISOString();
+    const trimmedResponse = trimPromptString(response);
+    await fs.appendFile(
+      logFile,
+      `${timestamp}: PROMPT RESPONSE: ${trimmedResponse}\n`,
+    );
+  } catch (_error) {
+    // Silently fail to avoid disrupting the user experience.
+    // We can add more robust error handling here if needed.
+  }
+}
+
+/**
+ * Trims tool call arguments to show keys and value snippets.
+ */
+function trimToolCallArgs(obj: unknown): unknown {
+  if (typeof obj === 'string') {
+    return trimPromptString(obj);
+  }
+
+  if (Array.isArray(obj)) {
+    return obj.map((item) => trimToolCallArgs(item));
+  }
+
+  if (obj && typeof obj === 'object') {
+    const result: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(obj)) {
+      result[key] = trimToolCallArgs(value);
+    }
+    return result;
+  }
+
+  return obj;
+}
+
+/**
+ * Logs tool calls to a file.
+ */
+export async function logToolCallToFile(toolCallData: unknown): Promise<void> {
+  try {
+    const logDir = path.join(os.homedir(), '.gemini');
+    await fs.mkdir(logDir, { recursive: true });
+    const logFile = path.join(logDir, 'prompt_log.txt');
+    const timestamp = new Date().toISOString();
+    const trimmedToolCallData = trimToolCallArgs(toolCallData);
+    const toolCallString = JSON.stringify(trimmedToolCallData);
+    await fs.appendFile(
+      logFile,
+      `${timestamp}: TOOL_CALL: ${toolCallString}\n`,
+    );
   } catch (_error) {
     // Silently fail to avoid disrupting the user experience.
     // We can add more robust error handling here if needed.
@@ -418,11 +498,14 @@ export class GeminiChat {
         on429CountChange: this.config.retry429CountHandler,
       });
       const durationMs = Date.now() - startTime;
+      const responseText = getStructuredResponse(response);
       await this._logApiResponse(
         durationMs,
         response.usageMetadata,
-        getStructuredResponse(response),
+        responseText,
       );
+
+      logResponseToFile(responseText || '');
 
       this.sendPromise = (async () => {
         const outputContent = response.candidates?.[0]?.content;
@@ -667,6 +750,8 @@ export class GeminiChat {
         this.getFinalUsageMetadata(chunks),
         fullText,
       );
+
+      logResponseToFile(fullText || '');
     }
     this.recordHistory(inputContent, outputContent);
   }

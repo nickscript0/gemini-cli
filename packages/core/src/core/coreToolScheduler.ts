@@ -18,6 +18,7 @@ import {
   logToolCall,
   ToolCallEvent,
 } from '../index.js';
+import { logToolCallToFile } from './geminiChat.js';
 import { Part, PartListUnion } from '@google/genai';
 import { getResponseTextFromParts } from '../utils/generateContentResponseUtilities.js';
 import {
@@ -597,6 +598,14 @@ export class CoreToolScheduler {
                 this.notifyToolCallsUpdate();
               }
             : undefined;
+
+        // Log tool call to file
+        logToolCallToFile({
+          toolName,
+          callId,
+          args: scheduledCall.request.args,
+          timestamp: new Date().toISOString(),
+        });
 
         scheduledCall.tool
           .execute(scheduledCall.request.args, signal, liveOutputCallback)
