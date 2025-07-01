@@ -10,9 +10,9 @@ This fork extends the original Gemini CLI with additional features and improveme
 
 ### 1. Request Status Display Feature
 
-**Status**: ✅ Complete (Enhanced with Counts)  
-**Date**: June 30, 2025  
-**Description**: Added real-time request status display in the CLI footer showing ongoing API requests with size, duration, detailed configuration information, and cumulative request type counts.
+**Status**: ✅ Complete (Enhanced with Counts & Status Messages)  
+**Date**: July 1, 2025  
+**Description**: Added real-time request status display in the CLI footer showing ongoing API requests with size, duration, detailed configuration information, cumulative request type counts, and comprehensive status messages for all request phases.
 
 #### Files Added:
 
@@ -50,6 +50,11 @@ This fork extends the original Gemini CLI with additional features and improveme
   - **Temperature setting** (model creativity parameter)
   - **Max output tokens** (response length limit)
   - **System instruction snippet** (first 50 characters of system prompt, trimmed of whitespace)
+- **Comprehensive status message display** showing all request phases:
+  - **"Prompt Request"** - When sending initial prompt to Gemini API
+  - **"Received Prompt Response"** - When prompt response is received from API
+  - **"Tool Call Request"** - When executing tool calls based on model response
+  - **"Tool Call Complete"** - When tool execution finishes and results are ready
 - Automatic cleanup on request completion/error
 - Non-intrusive display (new line below main footer)
 - Type-specific request identification
@@ -69,7 +74,7 @@ Potential future enhancements:
 
 ---
 
-_Last Updated: June 30, 2025_
+_Last Updated: July 1, 2025_
 
 ## Recent Enhancement (June 29, 2025)
 
@@ -105,4 +110,5 @@ This enhancement helps users understand exactly what parameters are being sent t
 - Modified `handleFinalSubmit` in App.tsx to call `resetRequestCounts` before processing new user input
 - Updated Footer component to display counts with color-coded formatting on a separate line
 - **Layout Enhancement (June 30, 2025)**: Moved request counts and 429 error counts to their own line below the main footer to reduce clutter and improve readability
+- **Status Message Enhancement (July 1, 2025)**: Added comprehensive status message display in Footer.tsx to show all phases of request processing including prompt requests, responses, tool calls, and completion states
 - Maintains backward compatibility with existing request status functionality

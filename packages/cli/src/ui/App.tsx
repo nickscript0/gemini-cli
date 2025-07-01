@@ -286,7 +286,8 @@ const App = ({ config, settings, startupWarnings = [] }: AppProps) => {
   }, [config, setConsecutive429Count]);
 
   // Set up request status handler
-  const { startRequest, endRequest, resetRequestCounts } = useRequestStatus();
+  const { startRequest, endRequest, resetRequestCounts, setStatusMessage } =
+    useRequestStatus();
   useEffect(() => {
     const requestStatusHandler = (
       event: 'start' | 'end',
@@ -304,7 +305,12 @@ const App = ({ config, settings, startupWarnings = [] }: AppProps) => {
     if (typeof config.setRequestStatusHandler === 'function') {
       config.setRequestStatusHandler(requestStatusHandler);
     }
-  }, [config, startRequest, endRequest]);
+
+    // Set up status message handler
+    if (typeof config.setStatusMessageHandler === 'function') {
+      config.setStatusMessageHandler(setStatusMessage);
+    }
+  }, [config, startRequest, endRequest, setStatusMessage]);
 
   const {
     handleSlashCommand,

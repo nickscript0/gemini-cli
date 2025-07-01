@@ -44,7 +44,8 @@ export const Footer: React.FC<FooterProps> = ({
   const limit = tokenLimit(model);
   const percentage = totalTokenCount / limit;
   const { consecutive429Count } = useRetryContext();
-  const { currentRequest, duration, requestCounts } = useRequestStatus();
+  const { currentRequest, duration, requestCounts, statusMessage } =
+    useRequestStatus();
 
   return (
     <Box flexDirection="column" marginTop={1} width="100%">
@@ -139,6 +140,12 @@ export const Footer: React.FC<FooterProps> = ({
               </Text>
             )}
           </Text>
+        </Box>
+      )}
+      {/* Status Message Line */}
+      {statusMessage && (
+        <Box justifyContent="flex-start" marginTop={0}>
+          <Text color={Colors.AccentYellow}>{statusMessage}</Text>
         </Box>
       )}
       {/* Request Status Line */}

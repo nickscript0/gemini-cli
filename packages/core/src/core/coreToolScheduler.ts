@@ -583,6 +583,7 @@ export class CoreToolScheduler {
         const scheduledCall = toolCall as ScheduledToolCall;
         const { callId, name: toolName } = scheduledCall.request;
         this.setStatusInternal(callId, 'executing');
+        this.config.statusMessageHandler?.('Tool Call Request');
 
         const liveOutputCallback =
           scheduledCall.tool.canUpdateOutput && this.outputUpdateHandler
@@ -616,6 +617,7 @@ export class CoreToolScheduler {
                 'cancelled',
                 'User cancelled tool execution.',
               );
+              this.config.statusMessageHandler?.('Tool Call Complete');
               return;
             }
 
@@ -632,6 +634,7 @@ export class CoreToolScheduler {
               error: undefined,
             };
             this.setStatusInternal(callId, 'success', successResponse);
+            this.config.statusMessageHandler?.('Tool Call Complete');
           })
           .catch((executionError: Error) => {
             this.setStatusInternal(
@@ -644,6 +647,7 @@ export class CoreToolScheduler {
                   : new Error(String(executionError)),
               ),
             );
+            this.config.statusMessageHandler?.('Tool Call Complete');
           });
       });
     }
@@ -668,6 +672,7 @@ export class CoreToolScheduler {
       if (this.onAllToolCallsComplete) {
         this.onAllToolCallsComplete(completedCalls);
       }
+      this.config.statusMessageHandler?.(null);
       this.notifyToolCallsUpdate();
     }
   }

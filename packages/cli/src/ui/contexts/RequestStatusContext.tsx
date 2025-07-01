@@ -40,9 +40,11 @@ interface RequestStatusContextType {
   currentRequest: RequestStatus | null;
   duration: number;
   requestCounts: RequestTypeCounts;
+  statusMessage: string | null;
   startRequest: (request: Omit<RequestStatus, 'startTime' | 'status'>) => void;
   endRequest: (id: string, status: 'completed' | 'error') => void;
   resetRequestCounts: () => void;
+  setStatusMessage: (message: string | null) => void;
 }
 
 const RequestStatusContext = createContext<
@@ -75,6 +77,7 @@ export const RequestStatusProvider: React.FC<RequestStatusProviderProps> = ({
     json: 0,
     content: 0,
   });
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
   // Timer effect to update duration
   useEffect(() => {
@@ -132,9 +135,11 @@ export const RequestStatusProvider: React.FC<RequestStatusProviderProps> = ({
         currentRequest,
         duration,
         requestCounts,
+        statusMessage,
         startRequest,
         endRequest,
         resetRequestCounts,
+        setStatusMessage,
       }}
     >
       {children}

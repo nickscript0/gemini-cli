@@ -111,6 +111,8 @@ export type RequestStatusHandler = (
   status?: 'completed' | 'error',
 ) => void;
 
+export type StatusMessageHandler = (message: string | null) => void;
+
 export interface ConfigParameters {
   sessionId: string;
   embeddingModel?: string;
@@ -186,6 +188,7 @@ export class Config {
   flashFallbackHandler?: FlashFallbackHandler;
   retry429CountHandler?: Retry429CountHandler;
   requestStatusHandler?: RequestStatusHandler;
+  statusMessageHandler?: StatusMessageHandler;
 
   constructor(params: ConfigParameters) {
     this.sessionId = params.sessionId;
@@ -313,6 +316,10 @@ export class Config {
 
   setRequestStatusHandler(handler: RequestStatusHandler): void {
     this.requestStatusHandler = handler;
+  }
+
+  setStatusMessageHandler(handler: StatusMessageHandler): void {
+    this.statusMessageHandler = handler;
   }
 
   getEmbeddingModel(): string {

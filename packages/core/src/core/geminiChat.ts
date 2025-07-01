@@ -472,6 +472,7 @@ export class GeminiChat {
     };
 
     this.config.requestStatusHandler?.('start', requestInfo);
+    this.config.statusMessageHandler?.('Prompt Request');
 
     const startTime = Date.now();
     let response: GenerateContentResponse;
@@ -506,6 +507,7 @@ export class GeminiChat {
       );
 
       logResponseToFile(responseText || '');
+      this.config.statusMessageHandler?.('Received Prompt Response');
 
       this.sendPromise = (async () => {
         const outputContent = response.candidates?.[0]?.content;
@@ -534,6 +536,7 @@ export class GeminiChat {
 
       // Track request completion
       this.config.requestStatusHandler?.('end', requestInfo, 'completed');
+      this.config.statusMessageHandler?.(null);
 
       return response;
     } catch (error) {
@@ -588,6 +591,7 @@ export class GeminiChat {
     };
 
     this.config.requestStatusHandler?.('start', requestInfo);
+    this.config.statusMessageHandler?.('Prompt Request');
 
     const startTime = Date.now();
 
@@ -633,6 +637,7 @@ export class GeminiChat {
 
       // Track request completion
       this.config.requestStatusHandler?.('end', requestInfo, 'completed');
+      this.config.statusMessageHandler?.(null);
 
       return result;
     } catch (error) {
@@ -712,7 +717,6 @@ export class GeminiChat {
   ) {
     const outputContent: Content[] = [];
     const chunks: GenerateContentResponse[] = [];
-    let errorOccurred = false;
 
     try {
       for await (const chunk of streamResponse) {
@@ -729,14 +733,8 @@ export class GeminiChat {
         }
         yield chunk;
       }
-    } catch (error) {
-      errorOccurred = true;
-      const durationMs = Date.now() - startTime;
-      this._logApiError(durationMs, error);
-      throw error;
-    }
 
-    if (!errorOccurred) {
+      // Process response if no error occurred
       const durationMs = Date.now() - startTime;
       const allParts: Part[] = [];
       for (const content of outputContent) {
@@ -752,6 +750,13 @@ export class GeminiChat {
       );
 
       logResponseToFile(fullText || '');
+      this.config.statusMessageHandler?.('Received Prompt Response');
+    } catch (error) {
+      const durationMs = Date.now() - startTime;
+      this._logApiError(durationMs, error);
+      this.sendPromise = Promise.resolve();
+      this.config.statusMessageHandler?.(null);
+      throw error;
     }
     this.recordHistory(inputContent, outputContent);
   }
