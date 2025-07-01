@@ -67,6 +67,7 @@ import { RetryProvider, useRetryContext } from './contexts/RetryContext.js';
 import {
   RequestStatusProvider,
   useRequestStatus,
+  STATUS_ABBREVIATIONS,
 } from './contexts/RequestStatusContext.js';
 import { useGitBranchName } from './hooks/useGitBranchName.js';
 import { useBracketedPaste } from './hooks/useBracketedPaste.js';
@@ -126,6 +127,13 @@ const App = ({ config, settings, startupWarnings = [] }: AppProps) => {
   const [themeError, setThemeError] = useState<string | null>(null);
   const [authError, setAuthError] = useState<string | null>(null);
   const [editorError, setEditorError] = useState<string | null>(null);
+  const currentPhaseRef = useRef<{
+    phase: string | null;
+    startTime: number | null;
+  }>({
+    phase: null,
+    startTime: null,
+  });
   const [footerHeight, setFooterHeight] = useState<number>(0);
   const [corgiMode, setCorgiMode] = useState(false);
   const [currentModel, setCurrentModel] = useState(config.getModel());
@@ -286,8 +294,14 @@ const App = ({ config, settings, startupWarnings = [] }: AppProps) => {
   }, [config, setConsecutive429Count]);
 
   // Set up request status handler
-  const { startRequest, endRequest, resetRequestCounts, setStatusMessage } =
-    useRequestStatus();
+  const {
+    startRequest,
+    endRequest,
+    resetRequestCounts,
+    setStatusMessage,
+    addTimelineEntry,
+    markUserInputSubmitted,
+  } = useRequestStatus();
   useEffect(() => {
     const requestStatusHandler = (
       event: 'start' | 'end',
@@ -306,11 +320,47 @@ const App = ({ config, settings, startupWarnings = [] }: AppProps) => {
       config.setRequestStatusHandler(requestStatusHandler);
     }
 
-    // Set up status message handler
+    // Set up timeline-aware status message handler
+    const timelineAwareStatusHandler = (message: string | null) => {
+      const now = Date.now();
+
+      // If we have a previous phase, complete it and add to timeline
+      if (currentPhaseRef.current.phase && currentPhaseRef.current.startTime) {
+        const duration = now - currentPhaseRef.current.startTime;
+        const statusInfo = STATUS_ABBREVIATIONS[currentPhaseRef.current.phase];
+
+        if (statusInfo) {
+          addTimelineEntry({
+            abbreviation: statusInfo.abbreviation,
+            duration,
+            startTime: currentPhaseRef.current.startTime,
+            color: statusInfo.color,
+          });
+        }
+      }
+
+      // Update current phase
+      if (message) {
+        currentPhaseRef.current = {
+          phase: message,
+          startTime: now,
+        };
+      } else {
+        // Clear current phase when message is null
+        currentPhaseRef.current = {
+          phase: null,
+          startTime: null,
+        };
+      }
+
+      // Set the status message
+      setStatusMessage(message);
+    };
+
     if (typeof config.setStatusMessageHandler === 'function') {
-      config.setStatusMessageHandler(setStatusMessage);
+      config.setStatusMessageHandler(timelineAwareStatusHandler);
     }
-  }, [config, startRequest, endRequest, setStatusMessage]);
+  }, [config, startRequest, endRequest, setStatusMessage, addTimelineEntry]);
 
   const {
     handleSlashCommand,
@@ -481,10 +531,11 @@ const App = ({ config, settings, startupWarnings = [] }: AppProps) => {
       const trimmedValue = submittedValue.trim();
       if (trimmedValue.length > 0) {
         resetRequestCounts();
+        markUserInputSubmitted(); // Mark that user has submitted input
         submitQuery(trimmedValue);
       }
     },
-    [submitQuery, resetRequestCounts],
+    [submitQuery, resetRequestCounts, markUserInputSubmitted],
   );
 
   const logger = useLogger();

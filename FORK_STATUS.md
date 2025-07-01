@@ -4,7 +4,7 @@ This document tracks the changes made to this fork of the Gemini CLI project.
 
 ## Overview
 
-This fork extends the original Gemini CLI with additional features and improvements focused on user experience and request visibility.
+This fork extends the original Gemini CLI with additional features and improvements focused on user experience and request visibility, including real-time request status tracking and a color-coded timeline of request processing phases.
 
 ## Changes Made
 
@@ -60,6 +60,62 @@ This fork extends the original Gemini CLI with additional features and improveme
 - Type-specific request identification
 - Concise, color-coded parameter display
 
+### 2. Timeline Feature
+
+**Status**: ✅ Complete  
+**Date**: July 1, 2025  
+**Description**: Added a color-coded timeline display that shows completed request phases with their durations, providing a concise history of request processing.
+
+#### Files Modified:
+
+- `packages/cli/src/ui/contexts/RequestStatusContext.tsx` - Added timeline state management and duration formatting
+- `packages/cli/src/ui/components/Footer.tsx` - Added timeline display with color-coded abbreviations
+- `packages/cli/src/ui/App.tsx` - Enhanced status message handler to track timeline entries
+- `packages/core/src/config/config.ts` - Extended status message handler for timeline tracking
+
+#### Technical Details:
+
+- **Display Format**: `timeline: PR (1m), TC (10s), RR (15s), CC (2s)`
+- **Color Coding**:
+  - **PR** (Prompt Request) - Blue
+  - **RR** (Received Prompt Response) - Green
+  - **TC** (Tool Call Request) - Yellow
+  - **CC** (Tool Call Complete) - Red
+- **Duration Formatting**:
+  - `<1s`: milliseconds (500ms)
+  - `1-59s`: seconds (15s)
+  - `≥1m`: minutes (1m 30s or 1m)
+- **Smart Clearing**: Timeline only clears on actual user input submission (when user presses Enter), persists across tool calls and automated requests
+- **Phase Tracking**: Automatically tracks status message transitions and calculates durations
+
+#### Features:
+
+- **Comprehensive Phase Tracking**: Captures all request processing phases with precise timing
+- **Visual Timeline**: Color-coded abbreviations make it easy to identify different phase types
+- **Smart Persistence**: Timeline accumulates across tool executions and only resets on new user input
+- **Automatic Duration Calculation**: Tracks phase start times and calculates durations when phases complete
+- **Concise Display**: Compact format shows essential timing information without clutter
+- **Real-time Updates**: Timeline updates immediately as phases complete
+- **Integration**: Seamlessly works with existing status message system
+
+#### Data Structure:
+
+```typescript
+interface TimelineEntry {
+  abbreviation: string; // "PR", "TC", "RR", "CC"
+  duration: number; // milliseconds
+  startTime: number; // timestamp
+  color: string; // color name for display
+}
+```
+
+#### Timeline Behavior:
+
+- **Accumulation**: Timeline builds up during request processing, showing completed phases
+- **Persistence**: Remains visible across tool calls and non-user requests
+- **Clearing**: Only clears when user actually submits new input (presses Enter), not on tool-initiated requests
+- **Display**: Shows in Footer below status message line when timeline has entries
+
 ---
 
 ## Next Steps
@@ -71,6 +127,9 @@ Potential future enhancements:
 3. Request history/statistics
 4. Performance metrics
 5. Error rate tracking
+6. Timeline export/logging functionality
+7. Timeline filtering by phase type
+8. Performance bottleneck identification from timeline data
 
 ---
 
@@ -111,4 +170,6 @@ This enhancement helps users understand exactly what parameters are being sent t
 - Updated Footer component to display counts with color-coded formatting on a separate line
 - **Layout Enhancement (June 30, 2025)**: Moved request counts and 429 error counts to their own line below the main footer to reduce clutter and improve readability
 - **Status Message Enhancement (July 1, 2025)**: Added comprehensive status message display in Footer.tsx to show all phases of request processing including prompt requests, responses, tool calls, and completion states
+- **Timeline Feature (July 1, 2025)**: Added color-coded timeline display showing completed request phases with durations
+- **Timeline Clearing Fix (July 1, 2025)**: Fixed timeline clearing logic to only clear on actual user input submission, not on tool-initiated requests. Added `markUserInputSubmitted()` flag to distinguish between user-initiated and tool-initiated prompt requests.
 - Maintains backward compatibility with existing request status functionality

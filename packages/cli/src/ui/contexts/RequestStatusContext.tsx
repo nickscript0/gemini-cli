@@ -36,15 +36,61 @@ export interface RequestTypeCounts {
   content: number;
 }
 
+export interface TimelineEntry {
+  abbreviation: string;
+  duration: number;
+  startTime: number;
+  color: string;
+}
+
+export interface StatusPhaseTracker {
+  currentPhase: string | null;
+  phaseStartTime: number | null;
+}
+
+// Status message to abbreviation and color mapping
+export const STATUS_ABBREVIATIONS: Record<
+  string,
+  { abbreviation: string; color: string }
+> = {
+  'Prompt Request': { abbreviation: 'PR', color: 'AccentBlue' },
+  'Received Prompt Response': { abbreviation: 'RR', color: 'AccentGreen' },
+  'Tool Call Request': { abbreviation: 'TC', color: 'AccentYellow' },
+  'Tool Call Complete': { abbreviation: 'CC', color: 'AccentRed' },
+};
+
+// Format duration for timeline display
+export const formatTimelineDuration = (durationMs: number): string => {
+  if (durationMs < 1000) {
+    return `${Math.round(durationMs)}ms`;
+  }
+
+  const seconds = Math.floor(durationMs / 1000);
+  if (seconds < 60) {
+    return `${seconds}s`;
+  }
+
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+  if (remainingSeconds === 0) {
+    return `${minutes}m`;
+  }
+  return `${minutes}m ${remainingSeconds}s`;
+};
+
 interface RequestStatusContextType {
   currentRequest: RequestStatus | null;
   duration: number;
   requestCounts: RequestTypeCounts;
   statusMessage: string | null;
+  timeline: TimelineEntry[];
   startRequest: (request: Omit<RequestStatus, 'startTime' | 'status'>) => void;
   endRequest: (id: string, status: 'completed' | 'error') => void;
   resetRequestCounts: () => void;
   setStatusMessage: (message: string | null) => void;
+  addTimelineEntry: (entry: TimelineEntry) => void;
+  clearTimeline: () => void;
+  markUserInputSubmitted: () => void;
 }
 
 const RequestStatusContext = createContext<
@@ -78,6 +124,8 @@ export const RequestStatusProvider: React.FC<RequestStatusProviderProps> = ({
     content: 0,
   });
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [timeline, setTimeline] = useState<TimelineEntry[]>([]);
+  const [userInputSubmitted, setUserInputSubmitted] = useState<boolean>(false);
 
   // Timer effect to update duration
   useEffect(() => {
@@ -105,6 +153,12 @@ export const RequestStatusProvider: React.FC<RequestStatusProviderProps> = ({
     setCurrentRequest(newRequest);
     setDuration(0);
 
+    // Clear timeline only for user-initiated prompt requests
+    if (request.type === 'prompt' && userInputSubmitted) {
+      clearTimeline();
+      setUserInputSubmitted(false); // Reset the flag
+    }
+
     // Increment the count for this request type
     setRequestCounts((prev) => ({
       ...prev,
@@ -129,6 +183,18 @@ export const RequestStatusProvider: React.FC<RequestStatusProviderProps> = ({
     });
   };
 
+  const addTimelineEntry = (entry: TimelineEntry) => {
+    setTimeline((prev) => [...prev, entry]);
+  };
+
+  const clearTimeline = () => {
+    setTimeline([]);
+  };
+
+  const markUserInputSubmitted = () => {
+    setUserInputSubmitted(true);
+  };
+
   return (
     <RequestStatusContext.Provider
       value={{
@@ -136,10 +202,14 @@ export const RequestStatusProvider: React.FC<RequestStatusProviderProps> = ({
         duration,
         requestCounts,
         statusMessage,
+        timeline,
         startRequest,
         endRequest,
         resetRequestCounts,
         setStatusMessage,
+        addTimelineEntry,
+        clearTimeline,
+        markUserInputSubmitted,
       }}
     >
       {children}

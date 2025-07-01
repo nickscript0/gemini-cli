@@ -12,7 +12,10 @@ import { ConsoleSummaryDisplay } from './ConsoleSummaryDisplay.js';
 import process from 'node:process';
 import { MemoryUsageDisplay } from './MemoryUsageDisplay.js';
 import { useRetryContext } from '../contexts/RetryContext.js';
-import { useRequestStatus } from '../contexts/RequestStatusContext.js';
+import {
+  useRequestStatus,
+  formatTimelineDuration,
+} from '../contexts/RequestStatusContext.js';
 
 interface FooterProps {
   model: string;
@@ -44,7 +47,7 @@ export const Footer: React.FC<FooterProps> = ({
   const limit = tokenLimit(model);
   const percentage = totalTokenCount / limit;
   const { consecutive429Count } = useRetryContext();
-  const { currentRequest, duration, requestCounts, statusMessage } =
+  const { currentRequest, duration, requestCounts, statusMessage, timeline } =
     useRequestStatus();
 
   return (
@@ -146,6 +149,39 @@ export const Footer: React.FC<FooterProps> = ({
       {statusMessage && (
         <Box justifyContent="flex-start" marginTop={0}>
           <Text color={Colors.AccentYellow}>{statusMessage}</Text>
+        </Box>
+      )}
+      {/* Timeline Display */}
+      {timeline.length > 0 && (
+        <Box justifyContent="flex-start" marginTop={0}>
+          <Text color={Colors.Gray}>timeline: </Text>
+          {timeline.map((entry, index) => {
+            const getColor = (colorName: string) => {
+              switch (colorName) {
+                case 'AccentBlue':
+                  return Colors.AccentBlue;
+                case 'AccentGreen':
+                  return Colors.AccentGreen;
+                case 'AccentYellow':
+                  return Colors.AccentYellow;
+                case 'AccentRed':
+                  return Colors.AccentRed;
+                default:
+                  return Colors.Gray;
+              }
+            };
+
+            return (
+              <Text key={index}>
+                <Text color={getColor(entry.color)}>{entry.abbreviation}</Text>
+                <Text color={Colors.Gray}>
+                  {' '}
+                  ({formatTimelineDuration(entry.duration)})
+                  {index < timeline.length - 1 ? ', ' : ''}
+                </Text>
+              </Text>
+            );
+          })}
         </Box>
       )}
       {/* Request Status Line */}
