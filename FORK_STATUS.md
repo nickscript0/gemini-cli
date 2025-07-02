@@ -64,7 +64,8 @@ This fork extends the original Gemini CLI with additional features and improveme
 
 **Status**: ✅ Complete  
 **Date**: July 1, 2025  
-**Description**: Added a color-coded timeline display that shows completed request phases with their durations, providing a concise history of request processing.
+**Description**: Added a color-coded timeline display that shows completed request phases with their durations,  
+providing a concise history of request processing.
 
 #### Files Modified:
 

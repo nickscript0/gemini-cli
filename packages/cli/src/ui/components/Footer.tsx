@@ -153,7 +153,7 @@ export const Footer: React.FC<FooterProps> = ({
       )}
       {/* Timeline Display */}
       {timeline.length > 0 && (
-        <Box justifyContent="flex-start" marginTop={0}>
+        <Box flexDirection="row" flexWrap="wrap" marginTop={0}>
           <Text color={Colors.Gray}>timeline: </Text>
           {timeline.map((entry, index) => {
             const getColor = (colorName: string) => {
