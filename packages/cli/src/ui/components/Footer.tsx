@@ -122,35 +122,42 @@ export const Footer: React.FC<FooterProps> = ({
         requestCounts.prompt > 0 ||
         requestCounts.json > 0 ||
         requestCounts.content > 0) && (
-        <Box justifyContent="flex-start" marginTop={0}>
-          <Text color={Colors.Gray}>
-            {consecutive429Count >= 0 && (
-              <Text color={Colors.AccentRed}>429×{consecutive429Count}</Text>
-            )}
-            {(requestCounts.prompt > 0 ||
-              requestCounts.json > 0 ||
-              requestCounts.content > 0) && (
-              <Text color={Colors.Gray}>
-                {consecutive429Count >= 0 ? ' | ' : ''}
-                reqs:{' '}
-                <Text color={Colors.AccentRed}>
-                  P:{requestCounts.prompt}
-                </Text>{' '}
-                <Text color={Colors.AccentBlue}>J:{requestCounts.json}</Text>{' '}
-                <Text color={Colors.AccentGreen}>
-                  C:{requestCounts.content}
+          <Box justifyContent="flex-start" marginTop={0}>
+            <Text color={Colors.Gray}>
+              {consecutive429Count >= 0 && (
+                <Text color={Colors.AccentRed}>429×{consecutive429Count}</Text>
+              )}
+              {(requestCounts.prompt > 0 ||
+                requestCounts.json > 0 ||
+                requestCounts.content > 0) && (
+                  <Text color={Colors.Gray}>
+                    {consecutive429Count >= 0 ? ' | ' : ''}
+                    reqs:{' '}
+                    <Text color={Colors.AccentRed}>
+                      P:{requestCounts.prompt}
+                    </Text>{' '}
+                    <Text color={Colors.AccentBlue}>J:{requestCounts.json}</Text>{' '}
+                    <Text color={Colors.AccentGreen}>
+                      C:{requestCounts.content}
+                    </Text>
+                  </Text>
+                )}
+              {timeline.length > 0 && (
+                <Text color={Colors.Gray}>
+                  {' | timeline: '}
+                  <Text color={Colors.AccentBlue}>PR</Text>
+                  <Text color={Colors.Gray}>=prompt </Text>
+                  <Text color={Colors.AccentGreen}>RR</Text>
+                  <Text color={Colors.Gray}>=response </Text>
+                  <Text color={Colors.AccentYellow}>TC</Text>
+                  <Text color={Colors.Gray}>=tool </Text>
+                  <Text color={Colors.AccentRed}>CC</Text>
+                  <Text color={Colors.Gray}>=complete</Text>
                 </Text>
-              </Text>
-            )}
-          </Text>
-        </Box>
-      )}
-      {/* Status Message Line */}
-      {statusMessage && (
-        <Box justifyContent="flex-start" marginTop={0}>
-          <Text color={Colors.AccentYellow}>{statusMessage}</Text>
-        </Box>
-      )}
+              )}
+            </Text>
+          </Box>
+        )}
       {/* Timeline Display */}
       {timeline.length > 0 && (
         <Box flexDirection="row" flexWrap="wrap" marginTop={0}>
@@ -182,6 +189,12 @@ export const Footer: React.FC<FooterProps> = ({
               </Text>
             );
           })}
+        </Box>
+      )}
+      {/* Status Message Line */}
+      {statusMessage && (
+        <Box justifyContent="flex-start" marginTop={0}>
+          <Text color={Colors.AccentYellow}>{statusMessage}</Text>
         </Box>
       )}
       {/* Request Status Line */}
